@@ -1,0 +1,408 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * RON (Real or Not) — "Daylight Trust × Forensic Darkroom" design system.
+ *
+ * Light Mode is the DEFAULT (warm, approachable consumer trust — Pangram × Truecaller).
+ * Dark Mode is a 1-click toggle (deep optical instrument — Leica × ObsidianUI).
+ * Verdict colors are UNIVERSAL across both themes.
+ */
+
+:root {
+	/* ——— Daylight Trust (default Light Mode) ——— */
+	--bg-canvas: #faf9f5;
+	--bg-surface: #ffffff;
+	--bg-subtle: #f2f0e8;
+	--text-primary: #141517;
+	--text-muted: #5e636e;
+	--border-ink: #1e2024;
+	--shadow-hard: 2px 2px 0px #1e2024;
+	--shadow-hard-lg: 4px 4px 0px #1e2024;
+	--glass-tint: rgba(255, 255, 255, 0.72);
+
+	/* ——— 5 Universal Verdict Colors (never change per theme) ——— */
+	--verdict-real: #10b981;
+	--verdict-filtered: #f59e0b;
+	--verdict-partial_ai: #f97316;
+	--verdict-twisted_story: #8b5cf6;
+	--verdict-made_by_ai: #ef4444;
+	--verdict-too_blurry: #9ca3af;
+
+	/* ——— Typography ——— */
+	--font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+	--font-proof: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+	color-scheme: light;
+}
+
+.dark {
+	/* ——— Forensic Darkroom ——— */
+	--bg-canvas: #090a0d;
+	--bg-surface: #12141a;
+	--bg-subtle: #1a1d24;
+	--text-primary: #f4f5f8;
+	--text-muted: #8c92a4;
+	--border-ink: #2e3440;
+	--shadow-hard: 2px 2px 0px rgba(0, 0, 0, 0.8);
+	--shadow-hard-lg: 4px 4px 0px rgba(0, 0, 0, 0.8);
+	--glass-tint: rgba(18, 20, 26, 0.72);
+
+	color-scheme: dark;
+}
+
+@theme inline {
+	--color-canvas: var(--bg-canvas);
+	--color-surface: var(--bg-surface);
+	--color-subtle: var(--bg-subtle);
+	--color-ink: var(--text-primary);
+	--color-muted: var(--text-muted);
+	--color-inkline: var(--border-ink);
+
+	--color-verdict-real: var(--verdict-real);
+	--color-verdict-filtered: var(--verdict-filtered);
+	--color-verdict-partial: var(--verdict-partial_ai);
+	--color-verdict-twisted: var(--verdict-twisted_story);
+	--color-verdict-fake: var(--verdict-made_by_ai);
+	--color-verdict-blurry: var(--verdict-too_blurry);
+
+	--font-display: var(--font-display);
+	--font-proof: var(--font-proof);
+}
+
+@layer base {
+	html {
+		scroll-behavior: smooth;
+	}
+
+	body {
+		background-color: var(--bg-canvas);
+		color: var(--text-primary);
+		font-family: var(--font-display);
+		-webkit-font-smoothing: antialiased;
+		text-rendering: optimizeLegibility;
+		transition:
+			background-color 0.25s ease,
+			color 0.25s ease;
+	}
+
+	::selection {
+		background: var(--text-primary);
+		color: var(--bg-canvas);
+	}
+}
+
+@layer components {
+	/* Tactile neo-brutalist ink outline + hard offset shadow. */
+	.ron-card {
+		background-color: var(--bg-surface);
+		border: 1.5px solid var(--border-ink);
+		border-radius: 1rem;
+		box-shadow: var(--shadow-hard);
+	}
+
+	.ron-well {
+		background-color: var(--bg-subtle);
+		border: 1.5px solid var(--border-ink);
+		border-radius: 0.875rem;
+	}
+
+	.ron-btn-hard {
+		border: 1.5px solid var(--border-ink);
+		box-shadow: var(--shadow-hard);
+		transition:
+			transform 0.12s ease,
+			box-shadow 0.12s ease;
+	}
+	.ron-btn-hard:hover {
+		transform: translate(-1px, -1px);
+		box-shadow: var(--shadow-hard-lg);
+	}
+	.ron-btn-hard:active {
+		transform: translate(1px, 1px);
+		box-shadow: 0px 0px 0px var(--border-ink);
+	}
+
+	/* Monospace proof metrics — always tabular. */
+	.ron-mono {
+		font-family: var(--font-proof);
+		font-variant-numeric: tabular-nums;
+		letter-spacing: -0.01em;
+	}
+
+	/* Kaomoji verdict faces — never wrap, always centered. */
+	.kaomoji {
+		font-family: var(--font-proof);
+		font-weight: 700;
+		white-space: nowrap;
+		line-height: 1;
+	}
+
+	/* Glowing media-stage outline tinted per verdict. */
+	.media-glow-real {
+		box-shadow:
+			0 0 0 2px var(--verdict-real),
+			0 0 32px -4px var(--verdict-real);
+	}
+	.media-glow-filtered {
+		box-shadow:
+			0 0 0 2px var(--verdict-filtered),
+			0 0 32px -4px var(--verdict-filtered);
+	}
+	.media-glow-partial_ai {
+		box-shadow:
+			0 0 0 2px var(--verdict-partial_ai),
+			0 0 32px -4px var(--verdict-partial_ai);
+	}
+	.media-glow-twisted_story {
+		box-shadow:
+			0 0 0 2px var(--verdict-twisted_story),
+			0 0 32px -4px var(--verdict-twisted_story);
+	}
+	.media-glow-made_by_ai {
+		box-shadow:
+			0 0 0 2px var(--verdict-made_by_ai),
+			0 0 32px -4px var(--verdict-made_by_ai);
+	}
+
+	/* Show Proof drawer always sits in a darkroom housing for legible heatmaps. */
+	.proof-housing {
+		background-color: #090a0d;
+		color: #f4f5f8;
+		border: 1.5px solid #2e3440;
+	}
+}
+
+@layer utilities {
+	.animate-platform-morph {
+		animation: platform-morph 7.5s ease-in-out infinite;
+	}
+	.animate-ron-float {
+		animation: ron-float 3.2s ease-in-out infinite;
+	}
+	.animate-pulse-soft {
+		animation: pulse-soft 2.4s ease-in-out infinite;
+	}
+}
+
+@keyframes platform-morph {
+	0%,
+	100% {
+		transform: translateY(0) scale(1);
+		opacity: 1;
+	}
+	50% {
+		transform: translateY(-2px) scale(1.04);
+		opacity: 0.92;
+	}
+}
+
+@keyframes ron-float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-5px);
+	}
+}
+
+@keyframes pulse-soft {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.55;
+	}
+}
+
+/* ─── Ronnie living avatar (shared by PiP + inline; PiP copies this sheet) ─── */
+.ronnie {
+	--ronnie-aura: #8c92a4;
+	--ronnie-orb-1: #2a2e3a;
+	--ronnie-orb-2: #14161d;
+	position: relative;
+	width: 134px;
+	height: 134px;
+	flex-shrink: 0;
+}
+.ronnie-aura {
+	position: absolute;
+	inset: 0;
+	border-radius: 32px;
+	background: radial-gradient(circle at 50% 50%, var(--ronnie-aura) 0%, transparent 68%);
+	opacity: 0.45;
+	animation: ronnie-breathe 2.8s ease-in-out infinite;
+}
+.ronnie[data-state='scanning'] .ronnie-aura {
+	opacity: 0.75;
+	animation-duration: 1.4s;
+}
+.ronnie[data-state='made_by_ai'] .ronnie-aura {
+	opacity: 0.9;
+	animation: ronnie-alarm 0.9s ease-in-out infinite;
+}
+.ronnie-radar {
+	position: absolute;
+	inset: 6px;
+	border-radius: 28px;
+	background: conic-gradient(from 0deg, transparent 0deg, var(--ronnie-aura) 40deg, transparent 80deg);
+	filter: blur(6px);
+	opacity: 0;
+}
+.ronnie[data-state='scanning'] .ronnie-radar {
+	opacity: 0.85;
+	animation: ronnie-sweep 1.6s linear infinite;
+}
+.ronnie-orb {
+	position: absolute;
+	inset: 12px;
+	border-radius: 26px;
+	background: linear-gradient(150deg, var(--ronnie-orb-1), var(--ronnie-orb-2));
+	border: 2px solid var(--ronnie-aura);
+	box-shadow:
+		0 0 18px -2px var(--ronnie-aura),
+		inset 0 0 22px rgba(255, 255, 255, 0.06);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 7px;
+	animation: ronnie-breathe 2.8s ease-in-out infinite;
+}
+.ronnie-eyes {
+	display: flex;
+	gap: 14px;
+}
+.ronnie-eye {
+	width: 20px;
+	height: 24px;
+	border-radius: 999px;
+	background: #f4f5f8;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	animation: ronnie-blink 4.6s ease-in-out infinite;
+}
+.ronnie-eye > i {
+	display: block;
+	width: 10px;
+	height: 12px;
+	border-radius: 999px;
+	background: #14161d;
+	transition: transform 0.45s ease;
+}
+.ronnie-brows {
+	display: flex;
+	gap: 12px;
+	height: 6px;
+}
+.ronnie-brows > i {
+	display: block;
+	width: 24px;
+	height: 5px;
+	border-radius: 999px;
+	background: var(--ronnie-aura);
+	transition:
+		transform 0.3s ease,
+		opacity 0.3s ease;
+}
+.ronnie-mouth {
+	display: flex;
+	align-items: flex-end;
+	gap: 3px;
+	height: 18px;
+}
+.ronnie-mouth > i {
+	display: block;
+	width: 4px;
+	border-radius: 999px;
+	background: var(--ronnie-aura);
+	height: 5px;
+	transition: height 0.08s linear;
+}
+/* State colors + expressions */
+.ronnie[data-state='idle'] {
+	--ronnie-aura: #8c92a4;
+}
+.ronnie[data-state='scanning'] {
+	--ronnie-aura: #06b6d4;
+}
+.ronnie[data-state='real'] {
+	--ronnie-aura: #10b981;
+}
+.ronnie[data-state='real'] .ronnie-eye {
+	height: 16px;
+}
+.ronnie[data-state='filtered'] {
+	--ronnie-aura: #f59e0b;
+}
+.ronnie[data-state='filtered'] .ronnie-brows > i:first-child {
+	transform: translateY(-3px) rotate(-8deg);
+}
+.ronnie[data-state='partial_ai'] {
+	--ronnie-aura: #f97316;
+}
+.ronnie[data-state='partial_ai'] .ronnie-brows > i:first-child {
+	transform: translateY(-4px) rotate(-12deg);
+}
+.ronnie[data-state='partial_ai'] .ronnie-brows > i:last-child {
+	transform: translateY(1px) rotate(6deg);
+}
+.ronnie[data-state='twisted_story'] {
+	--ronnie-aura: #8b5cf6;
+}
+.ronnie[data-state='twisted_story'] .ronnie-brows > i {
+	transform: translateY(2px);
+}
+.ronnie[data-state='made_by_ai'] {
+	--ronnie-aura: #ef4444;
+}
+.ronnie[data-state='made_by_ai'] .ronnie-brows > i:first-child {
+	transform: translateY(3px) rotate(14deg);
+}
+.ronnie[data-state='made_by_ai'] .ronnie-brows > i:last-child {
+	transform: translateY(3px) rotate(-14deg);
+}
+.ronnie[data-state='made_by_ai'] .ronnie-eye {
+	height: 19px;
+}
+@keyframes ronnie-breathe {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.035);
+	}
+}
+@keyframes ronnie-sweep {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+@keyframes ronnie-blink {
+	0%,
+	92%,
+	100% {
+		transform: scaleY(1);
+	}
+	95% {
+		transform: scaleY(0.08);
+	}
+}
+@keyframes ronnie-alarm {
+	0%,
+	100% {
+		opacity: 0.55;
+	}
+	50% {
+		opacity: 1;
+	}
+}

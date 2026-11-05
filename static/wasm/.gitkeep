@@ -1,0 +1,3 @@
+# Compiled wasm-pack output lands here (gitignored except this file).
+# Build with: cd rust-forensics && wasm-pack build --target web --out-dir ../static/wasm --out-name ron_forensics
+# The app runs fully without it via the TypeScript worker fallback.

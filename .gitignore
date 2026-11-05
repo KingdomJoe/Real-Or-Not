@@ -1,0 +1,38 @@
+node_modules
+
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+/.svelte-kit
+/build
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Rust WASM build outputs (rebuilt via wasm-pack; fallback works without them)
+static/wasm/*
+!static/wasm/.gitkeep
+
+# Rust
+rust-forensics/target/
+rust-forensics/pkg/
+
+# Dogfood QA artifacts (screenshots/videos/logs would otherwise pollute
+# git status AND trigger Tailwind content rescans + HMR reloads in dev)
+dogfood-output/
+
+# Python
+__pycache__/
