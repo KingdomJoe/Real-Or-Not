@@ -26,7 +26,12 @@ import {
 	type C2paAndMetadataReport,
 	type CandidateRegion
 } from '#lib/services/realForensics';
-import { analyzeMedia, type AnalyzeResult } from '#lib/services/metaApi';
+import {
+	analyzeMedia,
+	getBackendHealth,
+	type AnalyzeResult,
+	type BackendHealth
+} from '#lib/services/metaApi';
 import { extract16kHzMonoWavFromBlob } from '#lib/utils/audioWavEncoder';
 import { browser } from '$app/env';
 import { PUBLIC_CONVEX_URL } from '$app/env/public';
@@ -408,6 +413,28 @@ class RonStore {
 	regional = $state<RegionalLiveResult | null>(null);
 	/** Honest blocked-link notice (never silently swapped for a fixture). */
 	linkBlocked = $state<BlockedLink | null>(null);
+	/** Live backend health (null until the first /api/health probe resolves). */
+	backendHealth = $state<BackendHealth | null>(null);
+
+	/** Derived backend status for the Navbar pill. */
+	backendStatus = $derived.by<'unknown' | 'live' | 'degraded' | 'local-only'>(() => {
+		const h = this.backendHealth;
+		if (!h) return 'unknown';
+		const live = [h.meta, h.modal, h.sparkOpen].filter(Boolean).length;
+		if (live === 3) return 'live';
+		if (live > 0) return 'degraded';
+		return 'local-only';
+	});
+
+	/** Probe /api/health once (call on app start; safe to re-run). */
+	async refreshBackendHealth(): Promise<void> {
+		if (!browser) return;
+		try {
+			this.backendHealth = await getBackendHealth();
+		} catch {
+			this.backendHealth = null;
+		}
+	}
 
 	/** Currently inspected scan (falls back to first). */
 	activeScan = $derived(
@@ -713,7 +740,8 @@ class RonStore {
 							audioSlices,
 							audioDataUrl,
 							live?.transcript ?? '',
-							live?.modelsExecuted ?? []
+							live?.modelsExecuted ?? [],
+							live?.errors ?? []
 						)
 					: buildVisualUploadScan(
 							file,
@@ -726,7 +754,8 @@ class RonStore {
 						audioSlices,
 						audioDataUrl,
 						keyframes,
-						live?.modelsExecuted ?? []
+						live?.modelsExecuted ?? [],
+						live?.errors ?? []
 					);
 			this.addScan(scan);
 			this.provenance = provenance;
@@ -1118,7 +1147,8 @@ function buildVisualUploadScan(
 	audioSlices: AudioSlice[],
 	audioDataUrl: string | undefined,
 	keyframes: string[],
-	modelsExecuted: string[]
+	modelsExecuted: string[],
+	stageErrors: Array<{ stage: string; message: string }>
 ): MediaScanResult {
 	const flagged = regional?.regionScores.filter((r) => r.isFlaggedAnomaly) ?? [];
 	const topSigma = regional ? Math.max(0, ...regional.regionScores.map((r) => r.elaDivergenceSigma)) : 0;
@@ -1199,6 +1229,12 @@ function buildVisualUploadScan(
 					stage: 'Live server analysis (/api/analyze)',
 					durationMs: 0,
 					output: 'executed — see scan fields'
+				})),
+				...stageErrors.map((e) => ({
+					model: 'ron-pipeline',
+					stage: `⚠ ${e.stage} failed — fell back honestly`,
+					durationMs: 0,
+					output: e.message.slice(0, 160)
 				}))
 			],
 			jevCalibration: {
@@ -1219,7 +1255,8 @@ function buildAudioUploadScan(
 	audioSlices: AudioSlice[],
 	audioDataUrl: string | undefined,
 	transcript: string,
-	modelsExecuted: string[]
+	modelsExecuted: string[],
+	stageErrors: Array<{ stage: string; message: string }>
 ): MediaScanResult {
 	const gen = provenance.detectedAiGeneratorString;
 	const isEleven = !!gen && gen.toLowerCase().includes('elevenlabs');
@@ -1310,6 +1347,12 @@ function buildAudioUploadScan(
 					stage: 'Live server analysis (/api/analyze)',
 					durationMs: 0,
 					output: 'executed — see scan fields'
+				})),
+				...stageErrors.map((e) => ({
+					model: 'ron-pipeline',
+					stage: `⚠ ${e.stage} failed — fell back honestly`,
+					durationMs: 0,
+					output: e.message.slice(0, 160)
 				}))
 			],
 			jevCalibration: {

@@ -121,6 +121,7 @@ export function buildBuddyScan(input: {
 	regional: { overallAnomalyScore: number; regionScores: RegionalMaskScore[] } | null;
 	analysis: Extract<AnalyzeResult, { status: 'ok' }> | null;
 	modelsExecuted: string[];
+	stageErrors: Array<{ stage: string; message: string }>;
 }): MediaScanResult {
 	const { tabLabel, platform, keyframes, wavDurationSec, regional, analysis } = input;
 	const turns = analysis?.turns ?? [];
@@ -232,12 +233,20 @@ export function buildBuddyScan(input: {
 				fftPeakRatio: r.highFreqEnergyRatio,
 				noiseprintKl: 0
 			})),
-			metaModelsTrace: input.modelsExecuted.map((m) => ({
-				model: m,
-				stage: 'Live tab analysis (/api/analyze)',
-				durationMs: 0,
-				output: 'executed live on this capture'
-			})),
+			metaModelsTrace: [
+				...input.modelsExecuted.map((m) => ({
+					model: m,
+					stage: 'Live tab analysis (/api/analyze)',
+					durationMs: 0,
+					output: 'executed live on this capture'
+				})),
+				...input.stageErrors.map((e) => ({
+					model: 'ron-pipeline',
+					stage: `⚠ ${e.stage} failed — fell back honestly`,
+					durationMs: 0,
+					output: e.message.slice(0, 160)
+				}))
+			],
 			jevCalibration: {
 				distribution: { real: 0, filtered: 0, partial_ai: 0, twisted_story: 0, made_by_ai: 0 },
 				epistemicBand: 0,
@@ -317,7 +326,8 @@ export async function runBuddyLiveAnalysis(opts: BuddyLiveInput): Promise<
 		wavDurationSec: pcm?.durationSec ?? 0,
 		regional,
 		analysis,
-		modelsExecuted
+		modelsExecuted,
+		stageErrors: analysis?.errors ?? []
 	});
 	say('Done.', 1);
 	return { ok: true, scan, modelsExecuted };

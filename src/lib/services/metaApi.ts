@@ -211,6 +211,36 @@ export async function analyzeMedia(req: AnalyzeRequest): Promise<AnalyzeResult> 
 	}
 }
 
+export interface BackendHealth {
+	status: 'ok';
+	meta: boolean;
+	modal: boolean;
+	modalReachable: boolean | null;
+	webhook: boolean;
+	sparkOpen: boolean;
+}
+
+/** Backend health probe — config presence only, never values. Null on transport failure. */
+export async function getBackendHealth(): Promise<BackendHealth | null> {
+	if (!browser) return null;
+	try {
+		const res = await fetch('/api/health', { method: 'GET' });
+		if (!res.ok) return null;
+		const data = (await res.json()) as Partial<BackendHealth> & { status?: string };
+		if (data?.status !== 'ok') return null;
+		return {
+			status: 'ok',
+			meta: data.meta === true,
+			modal: data.modal === true,
+			modalReachable: typeof data.modalReachable === 'boolean' ? data.modalReachable : null,
+			webhook: data.webhook === true,
+			sparkOpen: data.sparkOpen === true
+		};
+	} catch {
+		return null;
+	}
+}
+
 /** Muse Spark Open second opinion over a forensic summary. */
 export async function sparkOpenReason(
 	prompt: string,

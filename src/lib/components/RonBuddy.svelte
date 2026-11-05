@@ -184,14 +184,23 @@
 		captureBtn.onclick = async () => {
 			status.textContent = 'Requesting tab… pick a tab, window, or screen.';
 			bubbleText.textContent = 'Pick a tab — I’ll scan it the second it’s shared.';
+			proofBtn.style.display = 'none';
+			liveScan = null;
+			let picked: MediaStream;
 			try {
 				stopTracks();
 				volumeTap?.dispose();
 				volumeTap = null;
-				const picked = await navigator.mediaDevices.getDisplayMedia({
+				picked = await navigator.mediaDevices.getDisplayMedia({
 					video: true,
 					audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
 				});
+			} catch {
+				status.textContent = 'Capture dismissed — no worries, try again anytime.';
+				bubbleText.textContent = 'No problem — tap Capture whenever you’re ready.';
+				return;
+			}
+			try {
 				if (closed) {
 					picked.getTracks().forEach((t) => t.stop());
 					return;
@@ -258,12 +267,20 @@
 					/* sync channel unavailable — main tab already has it */
 				}
 				avatar.setState(verdictToRonnieState(liveScan.verdict));
-				status.textContent = `Verdict: ${liveScan.plainHeadline}`;
+				const ranLine =
+					outcome.modelsExecuted.length > 0
+						? `Checked with: ${outcome.modelsExecuted.join(' · ')}.`
+						: 'Checked on-device only.';
+				status.textContent = `Verdict: ${liveScan.plainHeadline} ${ranLine}`;
 				bubbleText.textContent = liveScan.plainHeadline;
 				proofBtn.style.display = 'inline-block';
-			} catch {
-				status.textContent = 'Capture dismissed — no worries, try again anytime.';
-				bubbleText.textContent = 'No problem — tap Capture whenever you’re ready.';
+			} catch (err) {
+				avatar.setState('idle');
+				captureBtn.disabled = false;
+				barWrap.style.display = 'none';
+				const msg = err instanceof Error ? err.message : 'Analysis crashed unexpectedly.';
+				status.textContent = `Analysis failed honestly: ${msg} Nothing was faked — try again.`;
+				bubbleText.textContent = 'That check crashed — nothing was faked. Tap Capture to retry.';
 			}
 		};
 	}

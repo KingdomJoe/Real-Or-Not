@@ -12,6 +12,40 @@
 		{ id: 'sim', emoji: '💬', label: 'Floating Ronnie Sim', short: 'Feed Sim' }
 	];
 
+	const backendDot = $derived(
+		ronStore.backendStatus === 'live'
+			? '#10B981'
+			: ronStore.backendStatus === 'degraded'
+				? '#F59E0B'
+				: '#9CA3AF'
+	);
+	const backendLabel = $derived(
+		ronStore.backendStatus === 'live'
+			? 'Live backend'
+			: ronStore.backendStatus === 'degraded'
+				? 'Partial backend'
+				: ronStore.backendStatus === 'local-only'
+					? 'Offline demo'
+					: 'Checking backend…'
+	);
+
+	function showBackendDetails() {
+		const h = ronStore.backendHealth;
+		if (!h) {
+			toast.info('Backend health check still running…');
+			return;
+		}
+		const line = (ok: boolean, name: string) => `${ok ? '●' : '○'} ${name}`;
+		toast.info('Live backend status', {
+			description:
+				`${line(h.meta, 'Meta API (transcribe + web)')} · ` +
+				`${line(h.modal && h.modalReachable !== false, 'Modal GPU (AudioSeal + SigLIP)')} · ` +
+				`${line(h.sparkOpen, 'Spark Open reasoning')}` +
+				(h.meta && h.modal && h.sparkOpen ? '' : ' — missing pieces fall back honestly, nothing is faked.')
+		});
+		void ronStore.refreshBackendHealth();
+	}
+
 	function onFloatRon() {
 		const scan = ronStore.activeScan;
 		const meta = VERDICT_META[scan.verdict];
@@ -47,31 +81,46 @@
 	>
 		<!-- Left: logo -->
 		<div class="flex items-center justify-between gap-3">
-			<a href="/" class="flex items-center gap-2.5" aria-label="RON home">
-				<span
-					class="ron-mono ron-btn-hard flex h-9 items-center justify-center rounded-xl px-2.5 text-sm font-bold text-white"
-					style="background-color: #10B981;"
-				>
-					&lt;•&gt;
-				</span>
-				<span class="leading-none">
-					<span class="block font-display text-xl font-bold tracking-tight">RON</span>
-					<span class="ron-mono block text-[10px] font-semibold uppercase tracking-widest text-muted">
-						Real or Not
+			<div class="flex items-center gap-2.5">
+				<a href="/" class="flex items-center gap-2.5" aria-label="RON home">
+					<span
+						class="ron-mono ron-btn-hard flex h-9 items-center justify-center rounded-xl px-2.5 text-sm font-bold text-white"
+						style="background-color: #10B981;"
+					>
+						&lt;•&gt;
 					</span>
-				</span>
-				<span
-					class="ron-mono hidden rounded-full bg-ink px-2.5 py-1 text-[10px] font-bold text-canvas xl:inline-block"
-					title="Open-weight attribution required by the Muse Model License"
+					<span class="leading-none">
+						<span class="block font-display text-xl font-bold tracking-tight">RON</span>
+						<span class="ron-mono block text-[10px] font-semibold uppercase tracking-widest text-muted">
+							Real or Not
+						</span>
+					</span>
+					<span
+						class="ron-mono hidden rounded-full bg-ink px-2.5 py-1 text-[10px] font-bold text-canvas xl:inline-block"
+						title="Open-weight attribution required by the Muse Model License"
+					>
+						Built with Muse Spark Open
+					</span>
+				</a>
+				<button
+					type="button"
+					onclick={showBackendDetails}
+					class="ron-mono hidden items-center gap-1.5 rounded-full border-[1.5px] border-inkline bg-surface px-2.5 py-1 text-[10px] font-bold md:inline-flex"
+					title="Which live backends are connected — click for details"
 				>
-					Built with Muse Spark Open
-				</span>
-			</a>
+					<span
+						class="inline-block h-2 w-2 rounded-full"
+						style="background-color: {backendDot};"
+					></span>
+					{backendLabel}
+				</button>
+			</div>
 			<div class="flex items-center gap-2 lg:hidden">
 				<button
 					type="button"
 					onclick={onFloatRon}
-					class="ron-btn-hard rounded-full bg-ink px-3.5 py-1.5 font-display text-xs font-bold text-canvas"
+					class="ron-btn-hard rounded-full px-3.5 py-1.5 font-display text-xs font-bold text-white"
+					style="background-color: #10B981;"
 				>
 					💬 Float RON
 				</button>
@@ -119,7 +168,8 @@
 			<button
 				type="button"
 				onclick={onFloatRon}
-				class="ron-btn-hard rounded-full bg-ink px-4 py-2 font-display text-[13px] font-bold text-canvas"
+				class="ron-btn-hard rounded-full px-4 py-2 font-display text-[13px] font-bold text-white"
+				style="background-color: #10B981;"
 			>
 				💬 Float RON
 			</button>

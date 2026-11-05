@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { openRonBuddyPip } from '#lib/components/RonBuddy.svelte';
+	import { mountRonnieAvatar, type RonnieAvatarHandle } from '#lib/components/ronnieAvatar';
 	import { MAX_UPLOAD_MB, ronStore } from '#lib/stores/ronStore.svelte';
 	import { SAMPLE_SHORT_LABELS, VERDICT_META } from '#lib/types/ron';
 	import { browser } from '$app/env';
@@ -10,6 +11,13 @@
 	let linkInput = $state('');
 	let dragOver = $state(false);
 	let fileInput: HTMLInputElement | null = $state(null);
+	let heroAvatarMount: HTMLDivElement | null = $state(null);
+
+	$effect(() => {
+		if (!browser || !heroAvatarMount) return;
+		const handle: RonnieAvatarHandle = mountRonnieAvatar(heroAvatarMount);
+		return () => handle.destroy();
+	});
 
 	/* Official brand marks, morphing every 1.5s (static strings — safe for {@html}). */
 	const BRAND_LOGOS: { name: string; svg: string }[] = [
@@ -254,9 +262,40 @@
 						class="inline-block h-2 w-2 rounded-full"
 						style="background-color: {VERDICT_META[s.verdict].color}"
 					></span>
-					{SAMPLE_SHORT_LABELS[s.id] ?? s.title}
-				</button>
+				{SAMPLE_SHORT_LABELS[s.id] ?? s.title}
+			</button>
 			{/each}
+		</div>
+	</div>
+
+	<!-- Co-primary: float Ronnie over any tab -->
+	<div class="ron-card mx-auto mt-6 flex max-w-3xl flex-col items-center gap-4 p-5 sm:flex-row sm:p-6">
+		<div bind:this={heroAvatarMount} aria-hidden="true" class="origin-center scale-[0.8]"></div>
+		<div class="min-w-0 flex-1 text-center sm:text-left">
+			<div class="font-display text-lg font-bold tracking-tight">
+				Or float Ronnie over any tab 🤖
+			</div>
+			<p class="mt-1 text-sm text-muted">
+				Ronnie watches YouTube, Zoom &amp; Meet with you — one tap scans the video
+				<em>and</em> the voices, live.
+			</p>
+			<div class="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
+				<button
+					type="button"
+					onclick={onFloatActiveTab}
+					class="ron-btn-hard inline-flex items-center gap-1.5 rounded-full px-4 py-2 font-display text-[13px] font-bold text-white"
+					style="background-color: #10B981;"
+				>
+					💬 Float Ronnie now
+				</button>
+				<button
+					type="button"
+					onclick={() => ronStore.setMode('sim')}
+					class="ron-mono text-xs font-bold text-muted underline underline-offset-2 hover:text-ink"
+				>
+					or try the feed simulator →
+				</button>
+			</div>
 		</div>
 	</div>
 </section>
